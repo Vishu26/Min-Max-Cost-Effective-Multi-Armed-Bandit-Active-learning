@@ -8,7 +8,7 @@ Yvone = np.load('yvone.npz')['arr_0'].astype(np.float32)
 cost = np.load("costs.npy")[:, 0]
 
 import tensorflow as tf
-
+from keras_drop_block import DropBlock2D
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import ZeroPadding2D, Dropout,Convolution2D, MaxPooling2D, Activation, BatchNormalization, Reshape
 from tensorflow.keras import backend as K
@@ -28,10 +28,11 @@ def build_FCN(optimizer, nrows, ncols, nbands):
     """Function to create Keras model of sample network."""
     model = tf.keras.models.Sequential()
     model.add(ZeroPadding2D((3, 3), input_shape=(nrows, ncols, nbands)))
+    model.add(DropBlock2D(block_size=3, keep_prob=0.8)
     model.add(Convolution2D(
               filters=16,
               kernel_size=(3, 3),
-              dilation_rate=(1, 1),kernel_regularizer=tf.keras.regularizers.l2(0.01)))
+              dilation_rate=(1, 1),kernel_regularizer=tf.keras.regularizers.l2(0.0001)))
     model.add(BatchNormalization(axis=3))
     model.add(Activation("relu"))
     model.add(ZeroPadding2D((1, 1)))
@@ -40,6 +41,7 @@ def build_FCN(optimizer, nrows, ncols, nbands):
               strides=(1, 1)
     ))
     model.add(ZeroPadding2D((2, 2)))
+    model.add(DropBlock2D(block_size=3, keep_prob=0.8)
     model.add(Convolution2D(
               filters=32,
               kernel_size=(5, 5),
@@ -53,20 +55,21 @@ def build_FCN(optimizer, nrows, ncols, nbands):
             strides=(1, 1)
     ))
     model.add(ZeroPadding2D((2, 2)))
+    model.add(DropBlock2D(block_size=3, keep_prob=0.8)
     model.add(Convolution2D(
               filters=64,
               kernel_size=(5, 5),
-              dilation_rate=(1, 1),kernel_regularizer=tf.keras.regularizers.l2(0.001)
+           dilation_rate=(1, 1),kernel_regularizer=tf.keras.regularizers.l2(0.001)
     ))
     model.add(BatchNormalization(axis=3))
     model.add(Activation("relu"))
-    model.add(Dropout(0.25))
     model.add(ZeroPadding2D((1, 1)))
     model.add(MaxPooling2D(
             pool_size=(3, 3),
             strides=(1, 1)
     ))
     model.add(ZeroPadding2D((2, 2)))
+    model.add(DropBlock2D(block_size=3, keep_prob=0.8)
     model.add(Convolution2D(
               filters=64,
               kernel_size=(5, 5),
